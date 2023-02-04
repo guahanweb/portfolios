@@ -1,0 +1,24 @@
+{
+  "name": "guahanweb-portfolios",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "workspaces": [
+    "cloud-functions/*",
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guahanweb/portfolios.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/guahanweb/portfolios/issues"
+  },
+  "homepage": "https://github.com/guahanweb/portfolios#readme"
+}

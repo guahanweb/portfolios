@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+programName=$( basename "$0" )
+
+echo "called ${programName}..."
+echo "done"
