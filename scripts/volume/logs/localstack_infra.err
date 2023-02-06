@@ -1,0 +1,29 @@
+2023-02-06T21:32:42.929  WARN --- [-functhread3] hypercorn.error            : ASGI Framework Lifespan error, continuing without Lifespan support
+2023-02-06T21:32:42.929  WARN --- [-functhread3] hypercorn.error            : ASGI Framework Lifespan error, continuing without Lifespan support
+2023-02-06T21:32:42.932  INFO --- [-functhread3] hypercorn.error            : Running on https://0.0.0.0:4566 (CTRL + C to quit)
+2023-02-06T21:32:42.932  INFO --- [-functhread3] hypercorn.error            : Running on https://0.0.0.0:4566 (CTRL + C to quit)
+2023-02-06T21:32:43.037  INFO --- [  MainThread] localstack.utils.bootstrap : Execution of "start_runtime_components" took 1208.62ms
+2023-02-06T21:32:52.630  INFO --- [functhread11] l.services.motoserver      : starting moto server on http://0.0.0.0:57783
+2023-02-06T21:32:52.630  INFO --- [   asgi_gw_0] localstack.services.infra  : Starting mock S3 service on http port 4566 ...
+2023-02-06T21:32:52.882  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS s3.HeadBucket => 404 (404)
+2023-02-06T21:32:53.396  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS s3.CreateBucket => 200
+2023-02-06T21:32:54.129  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.GetRestApis => 200
+2023-02-06T21:32:54.646  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.CreateRestApi => 201
+2023-02-06T21:32:55.168  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.GetRestApis => 200
+2023-02-06T21:32:55.663  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.GetResources => 200
+2023-02-06T21:32:56.159  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.CreateResource => 201
+2023-02-06T21:32:56.653  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.GetResources => 200
+2023-02-06T21:32:57.147  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.CreateResource => 201
+2023-02-06T21:32:57.634  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.GetResources => 200
+2023-02-06T21:32:58.128  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.PutMethod => 201
+2023-02-06T21:34:20.494  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.PutIntegration => 400 (AccessDeniedException)
+2023-02-06T21:35:00.500  INFO --- [   asgi_gw_0] localstack.request.aws     : AWS apigateway.PutIntegration => 201
+2023-02-06T21:35:16.635 ERROR --- [   asgi_gw_0] l.s.apigateway.invocations : Error invoking integration for API Gateway ID 'vct15dca97': API Gateway AWS integration action URI "arn:aws:apigateway:us-east-1:s3:action/PutObject&Bucket={bucket}&Key={key}", method "PUT" not yet implemented
+Traceback (most recent call last):
+  File "/opt/code/localstack/localstack/services/apigateway/invocations.py", line 291, in invoke_rest_api_integration
+    response = invoke_rest_api_integration_backend(invocation_context)
+  File "/opt/code/localstack/localstack/services/apigateway/invocations.py", line 446, in invoke_rest_api_integration_backend
+    raise Exception(
+Exception: API Gateway AWS integration action URI "arn:aws:apigateway:us-east-1:s3:action/PutObject&Bucket={bucket}&Key={key}", method "PUT" not yet implemented
+2023-02-06T21:35:16.636  INFO --- [   asgi_gw_0] localstack.request.http    : PUT /restapis/vct15dca97/Dev/_user_request_/portfolios-upload-bucket/abc123 => 400
+2023-02-06T21:38:44.449  INFO --- [   asgi_gw_1] localstack.request.aws     : AWS apigateway.DeleteIntegration => 204

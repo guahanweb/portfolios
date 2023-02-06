@@ -1,0 +1,9 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Base",
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true
+    }
+}

@@ -1,5 +1,53 @@
 #!/usr/bin/env bash
-programName=$( basename "$0" )
 
-echo "called ${programName}..."
-echo "done"
+export DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd )"
+
+[[ -f ~/.bashrc ]] && source ~/.bashrc
+[[ -f ${DIR}/settings.sh ]] && source ${DIR}/settings.sh
+[[ -f ${DIR}/utils.sh ]] && source ${DIR}/utils.sh
+
+export PROJECT_ROOT="$( dirname "${DIR}" )"
+
+# find workspace
+export WORKSPACE_DIR=""
+export WORKSPACE_NAME=""
+if [[ -f $( pwd )/package.json ]]
+then
+    export WORKSPACE_DIR="$( basename "$( pwd )" )"
+    export WORKSPACE_NAME="$( cat "$( pwd )/package.json" | jq .name -r )"
+fi
+
+programName=$( basename "$0" )
+function usage() {
+    echo "${CYAN}usage:${NC} ${programName} <command> [...options]"
+}
+
+function setup_environment() {
+    # do anything we need across the board here
+    info "assuring necessary prerequisites are installed"
+    assure_installed jq "brew install jq"
+    ok "done"
+}
+
+if [ "$#" -gt 0 ]
+then
+    CMD=${1} && shift
+    case "${CMD}" in
+        lambdas )
+            source ${DIR}/commands/lambdas.sh
+            ;;
+
+        localstack )
+            source ${DIR}/commands/localstack.sh
+            ;;
+
+        setup )
+            setup_environment
+            ;;
+
+        * )
+            usage
+    esac
+else
+    usage
+fi

@@ -1,0 +1,22 @@
+{
+  "name": "@guahanweb-portfolios/config-tsconfig",
+  "version": "1.0.0",
+  "description": "",
+  "files": [
+    "app.json",
+    "base.json",
+    "node.json"
+  ],
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guahanweb/portfolios.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/guahanweb/portfolios/issues"
+  },
+  "homepage": "https://github.com/guahanweb/portfolios#readme"
+}
