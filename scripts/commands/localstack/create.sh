@@ -25,6 +25,27 @@ function s3_create() {
     fi
 }
 
+function sqs_create() {
+    local queueName=${1}
+    [[ -z "${queueName}" ]] && fail "cannot create SQS queue without a name"
+
+    local queuestatus=$( aws ${awsEndpoint} --region ${AWS_REGION} sqs get-queue-url --queue-name ${queueName} 2>&1 )
+    if echo "${queuestatus}" | grep 'NonExistentQueue' > /dev/null 2>&1;
+    then
+        aws ${awsEndpoint} --region ${AWS_REGION} sqs create-queue \
+            --queue-name ${queueName} \
+            > /dev/null 2>&1
+
+        [ $? == 0 ] || fail "could not create queue ${BOLD_WHITE}${queueName}${NC}"
+        info "successfully created queue ${BOLD_WHITE}${queueName}${NC}"
+
+        local queueUrl=$( aws ${awsEndpoint} --region ${AWS_REGION} sqs get-queue-url --queue-name ${queueName} --query "QueueUrl" --output text )
+        info "queue url: ${CYAN}${queueUrl}${NC}"
+    else
+        info "SQS queue already exists: ${BOLD_WHITE}${queueName}${NC}"
+    fi
+}
+
 function lambda_create() {
     local functionName=${1}
     local zipFile=${2}
@@ -37,7 +58,6 @@ function lambda_create() {
         --runtime nodejs16.x \
         --handler ${handler} \
         --role arn:aws:iam::000000000000:role/inconsequential \
-        --environment "Variables={AWS_ENDPOINT_URL=http://host.docker.internal:4566}"
         > /dev/null 2>&1
 
     [ $? == 0 ] || fail "could not create function ${BOLD_WHITE}${functionName}${NC}"
@@ -111,7 +131,22 @@ function api_create() {
     info "api available at: ${BOLD_WHITE}${apiUri}${NC}"
 }
 
-lambda_create portfolio-upload-function ${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip index.handler
-s3_create portfolios-upload-bucket
-api_create portfolios-rest-api
+queueName="LocalImageIngest"
+functionName="portfolio-upload-function"
 
+# sqs_create ${queueName}
+# queueUrl=$( aws ${awsEndpoint} --region ${AWS_REGION} sqs get-queue-url --query "QueueUrl" --output text )
+
+# lambda_create ${functionName} ${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip index.handler
+aws ${awsEndpoint} --region ${AWS_REGION} lambda update-function-code \
+    --function-name ${functionName} \
+    --zip-file fileb://${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip \
+    > /dev/null 2>&1
+
+aws ${awsEndpoint} --region ${AWS_REGION} lambda update-function-configuration \
+    --function-name ${functionName} \
+    --environment "Variables={AWS_ENDPOINT_URL=http://host.docker.internal:4566,INGEST_QUEUE_URL=http://host.docker.internal:4566/000000000000/${queueName}}" \
+    > /dev/null 2>&1
+
+# s3_create portfolios-upload-bucket
+# api_create portfolios-rest-api
