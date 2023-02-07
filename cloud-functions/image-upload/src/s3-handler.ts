@@ -1,35 +1,44 @@
-import { S3 } from 'aws-sdk';
-import crypto from 'crypto';
-import { fileTypeFromBuffer } from 'file-type';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { loadFromEnv } from './utils';
+import crypto from 'crypto';
+import path from 'path';
 
-export async function upload(event: any) {
-    const s3 = new S3();
+interface IFile {
+    filename: string;
+    type: string;
+    name: string;
+    data: Buffer;
+}
+
+const region = loadFromEnv('AWS_REGION', 'us-east-1');
+const endpoint = loadFromEnv('AWS_ENDPOINT_URL', undefined);
+
+export async function upload(bucket: string, file: IFile) {
+    const props: any = { region, endpoint };
+    if (props.endpoint) props.forcePathStyle = true;
+    const s3 = new S3Client(props);
     const shasum = crypto.createHash('sha1');
-
-    const { body: { base64String } } = event;
-    const buffer = Buffer.from(base64String, 'base64');
-    const info: any = await fileTypeFromBuffer(buffer);
+    const { filename, type, data } = file
+    const ext = path.extname(filename);
 
     // get the hash for the filename
     shasum.update(String(new Date()));
-    const hash = shasum.digest();
+    const hash = shasum.digest('hex');
     const filepath = hash + '/';
-    const filename = crypto.randomUUID() + '.' + info.ext;
-    const fullpath = filepath + filename;
+    const fullpath = filepath + crypto.randomUUID() + ext;
 
     const params = {
-        Bucket: null, // todo: pull bucket name from event path
+        Bucket: bucket,
         Key: fullpath,
-        Body: buffer,
-        ContentType: info.mime,
+        Body: data,
+        ContentType: type,
     };
 
-    // todo: await s3.putObject()
+    const result = await s3.send(new PutObjectCommand(params));
 
     return {
-        size: buffer.toString('ascii').length,
-        type: info.mime,
+        size: data.toString('ascii').length,
+        type,
         filename,
         fullpath,
     };

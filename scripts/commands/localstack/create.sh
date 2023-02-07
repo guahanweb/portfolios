@@ -37,6 +37,7 @@ function lambda_create() {
         --runtime nodejs16.x \
         --handler ${handler} \
         --role arn:aws:iam::000000000000:role/inconsequential \
+        --environment "Variables={AWS_ENDPOINT_URL=http://host.docker.internal:4566}"
         > /dev/null 2>&1
 
     [ $? == 0 ] || fail "could not create function ${BOLD_WHITE}${functionName}${NC}"
@@ -94,7 +95,7 @@ function api_create() {
         --resource-id ${objectPathId} \
         --http-method POST \
         --integration-http-method POST \
-        --type AWS \
+        --type AWS_PROXY \
         --uri arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/${functionArn}/invocations \
         --request-parameters integration.request.path.bucket=method.request.path.folder,integration.request.path.key=method.request.path.object \
         --passthrough-behavior WHEN_NO_MATCH \
@@ -110,10 +111,7 @@ function api_create() {
     info "api available at: ${BOLD_WHITE}${apiUri}${NC}"
 }
 
-lambda_create \
-    portfolio-upload-function \
-    ${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip \
-    index.handler
+lambda_create portfolio-upload-function ${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip index.handler
 s3_create portfolios-upload-bucket
 api_create portfolios-rest-api
 
