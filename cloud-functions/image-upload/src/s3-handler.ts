@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { fileTypeFromBuffer } from 'file-type';
 import { loadFromEnv } from './utils';
 
-export async function upload(event) {
+export async function upload(event: any) {
     const s3 = new S3();
     const shasum = crypto.createHash('sha1');
 

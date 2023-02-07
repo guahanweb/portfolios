@@ -25,6 +25,24 @@ function s3_create() {
     fi
 }
 
+function lambda_create() {
+    local functionName=${1}
+    local zipFile=${2}
+    local handler=${3}
+
+    aws ${awsEndpoint} lambda create-function \
+        --region ${AWS_REGION} \
+        --function-name ${functionName} \
+        --zip-file fileb://${zipFile} \
+        --runtime nodejs16.x \
+        --handler ${handler} \
+        --role arn:aws:iam::000000000000:role/inconsequential \
+        > /dev/null 2>&1
+
+    [ $? == 0 ] || fail "could not create function ${BOLD_WHITE}${functionName}${NC}"
+    info "succesfully created function ${BOLD_WHITE}${functionName}${NC}"
+}
+
 function api_create() {
     local apiName=${1}
     [[ -z "${apiName}" ]] && fail "cannot create api without a name"
@@ -66,25 +84,36 @@ function api_create() {
         --request-parameters method.request.path.folder=true,method.request.path.object=true \
         > /dev/null 2>&1
 
-    [ $? == 0 ] || fail "failed to add api method: ${BOLD_WHITE}PUT /{folder}/{object}${NC}"
-    info "api method created: ${BOLD_WHITE}PUT /{folder}/{object}${NC}"
+    [ $? == 0 ] || fail "failed to add api method: ${BOLD_WHITE}POST /{folder}/{object}${NC}"
+    info "api method created: ${BOLD_WHITE}POST /{folder}/{object}${NC}"
 
-    # S3 integration configuration
-    # UNSUPPORTED: ideally, we want to use direct api -> s3 upload
-    #   however, LocalStack does not yet support PUT for S3 :((
-    # aws ${awsEndpoint} apigateway put-integration \
-    #     --region ${AWS_REGION} \
-    #     --rest-api-id ${apiId} \
-    #     --resource-id ${objectPathId} \
-    #     --http-method PUT \
-    #     --integration-http-method PUT \
-    #     --type AWS \
-    #     --uri \"arn:aws:apigateway:${AWS_REGION}:s3:action/PutObject&Bucket={bucket}&Key={key}\" \
-    #     --request-parameters integration.request.path.bucket=method.request.path.folder,integration.request.path.key=method.request.path.object \
-    #     --passthrough-behavior WHEN_NO_MATCH \
-    #     --credentials arn:aws:iam::000000000000:role/inconsequential \
-    #     > /dev/null 2>&1
+    functionArn="arn:aws:lambda:${AWS_REGION}:000000000000:function:portfolio-upload-function"
+    aws ${awsEndpoint} apigateway put-integration \
+        --region ${AWS_REGION} \
+        --rest-api-id ${apiId} \
+        --resource-id ${objectPathId} \
+        --http-method POST \
+        --integration-http-method POST \
+        --type AWS \
+        --uri arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/${functionArn}/invocations \
+        --request-parameters integration.request.path.bucket=method.request.path.folder,integration.request.path.key=method.request.path.object \
+        --passthrough-behavior WHEN_NO_MATCH \
+        > /dev/null 2>&1
+
+    aws ${awsEndpoint} apigateway create-deployment \
+        --region ${AWS_REGION} \
+        --rest-api-id ${apiId} \
+        --stage-name Local \
+        > /dev/null 2>&1
+
+    apiUri="http://localhost:4566/restapis/${apiId}/Local/_user_request_/"
+    info "api available at: ${BOLD_WHITE}${apiUri}${NC}"
 }
 
+lambda_create \
+    portfolio-upload-function \
+    ${PROJECT_ROOT}/cloud-functions/image-upload/bundle-1.0.0.zip \
+    index.handler
 s3_create portfolios-upload-bucket
 api_create portfolios-rest-api
+
