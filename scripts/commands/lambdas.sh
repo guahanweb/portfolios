@@ -52,6 +52,12 @@ then
         build )
             build_lambda
             bundle_dependencies
+            if [[ ! -z "${POSTINSTALL}" ]]
+            then
+                info "executing postinstall script..."
+                eval $POSTINSTALL > /dev/null 2>&1
+                ok "postinstall done"
+            fi
             bundle_lambda
             ;;
 

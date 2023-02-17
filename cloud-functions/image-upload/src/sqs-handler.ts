@@ -22,25 +22,25 @@ export async function queueImageForIngest(request: IQueueImageRequest) {
         DelaySeconds: 0,
         MessageAttributes: {
             Action: {
-                DataType: "String",
                 StringValue: action,
+                DataType: 'String',
             },
             Filename: {
-                DataType: "String",
                 StringValue: request.image.filename,
+                DataType: 'String',
             },
             Filetype: {
-                DataType: "String",
                 StringValue: request.image.type,
+                DataType: 'String',
             },
-            ObjectPath: {
-                DataType: "String",
+            Object: {
                 StringValue: request.image.fullpath,
+                DataType: 'String',
             },
             S3Bucket: {
-                DataType: "String",
                 StringValue: request.meta.bucket,
-            }
+                DataType: 'String',
+            },
         },
         MessageBody: `${action} requested for s3://${request.meta.bucket}/${request.image.fullpath}`,
         QueueUrl: queueUrl,

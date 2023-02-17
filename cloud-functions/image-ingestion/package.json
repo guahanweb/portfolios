@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "../../scripts/dev lambdas build"
+    "build": "POSTINSTALL=\"npm install --arch=x64 --platform=linux sharp\" ../../scripts/dev lambdas build"
   },
   "repository": {
     "type": "git",
